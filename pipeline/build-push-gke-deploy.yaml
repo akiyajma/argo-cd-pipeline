@@ -1,0 +1,80 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-push-gke-deploy
+  labels:
+    app.kubernetes.io/version: '0.1'
+  annotations:
+    tekton.dev/pipelines.minVersion: '0.12.1'
+    tekton.dev/tags: build, push, deploy
+spec:
+  description: >-
+    This Pipeline builds, pushes, and deploys your application to a Google Kubernetes
+    Engine cluster using gke-deploy.
+  workspaces:
+    - name: git-source
+      description: The git repo
+  params:
+    - name: gitUrl
+      description: Git repository url
+    - name: gitRevision
+      description: Git revision to check out
+      default: master
+    - name: pathToContext
+      type: string
+      description: The path to the build context relative to your source repo's root. This is used by Kaniko.
+      default: .
+    - name: pathToDockerFile
+      type: string
+      description: The path to the dockerfile to build, relative to the context.
+      default: Dockerfile
+    - name: pathToKubernetesConfigs
+      type: string
+      description: The path to the Kubernetes configs to deploy, relative to your source repo's root.
+    - name: imageUrl
+      type: string
+      description: URL of image repository.
+    - name: imageTag
+      type: string
+      description: Tag to apply to the built image.
+      default: latest
+    - name: clusterName
+      type: string
+      description: Name of target GKE cluster to deploy to.
+    - name: clusterLocation
+      type: string
+      description: Zone/region of target GKE cluster to deploy to.
+    - name: clusterProject
+      type: string
+      description: Project of target GKE cluster to deploy to.
+      default: ''
+  tasks:
+    - name: clone-repo
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: git-source
+      params:
+        - name: url
+          value: "$(params.gitUrl)"
+        - name: revision
+          value: "$(params.gitRevision)"
+        - name: subdirectory
+          value: "."
+        - name: deleteExisting
+          value: "true"
+    - name: kaniko
+      taskRef:
+        name: kaniko
+      runAfter:
+        - clone-repo
+      params:
+        - name: CONTEXT
+          value: '$(params.pathToContext)'
+        - name: IMAGE
+          value: '$(params.imageUrl):$(params.imageTag)'
+      workspaces:
+        - name: source
+          workspace: git-source
