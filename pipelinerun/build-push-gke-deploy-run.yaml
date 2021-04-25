@@ -12,13 +12,13 @@ spec:
         claimName: workspace-source-pvc
   params:
   - name: gitUrl
-    value: https://github.com/akiyajma/catalog
+    value: https://github.com/akiyajma/tekton-app
   - name: gitRevision
-    value: gke-deploy-demo 
+    value: release 
   - name: pathToContext
-    value: pipeline/build-push-gke-deploy/0.1/samples/app
+    value: app
   - name: pathToKubernetesConfigs
-    value: pipeline/build-push-gke-deploy/0.1/samples/app/config
+    value: app/config
   - name: imageUrl
     value: gcr.io/cicd-310509/gke-deploy-tekton-demo
   - name: clusterName
