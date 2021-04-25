@@ -21,6 +21,8 @@ spec:
     value: app/config
   - name: imageUrl
     value: gcr.io/cicd-310509/gke-deploy-tekton-demo
+  - name: imageTag
+    value: 1.0
   - name: clusterName
     value: cluster-1
   - name: clusterLocation
