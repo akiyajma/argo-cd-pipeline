@@ -64,7 +64,7 @@ spec:
   serviceAccountName: tekton-triggers-admin
   resources:
     KubernetesResource:
-      serviceType: LoadBalancer
+      serviceType: NodePort
   triggers:
     - bindings:
       - ref: cicd-pipelinebinding
