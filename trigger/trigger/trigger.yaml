@@ -1,0 +1,72 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: cicd-triggertemplate
+spec:
+  params:
+    - name: gitrevision
+      description: The git revision
+      default: master
+    - name: gitrepositoryurl
+      description: The git repository url
+    - name: namespace
+      description: The namespace to create the resources
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        name: build-push-gke-deploy-run-$(uid)
+      spec:
+        pipelineRef:
+          name: build-push-gke-deploy
+        serviceAccountName: tekton-ci
+        workspaces:
+          - name:  git-source
+            persistentVolumeClaim:
+              claimName: workspace-source-pvc
+        params:
+        - name: gitUrl
+          value: https://github.com/akiyajma/tekton-app
+        - name: gitRevision
+          value: release 
+        - name: pathToContext
+          value: app
+        - name: pathToKubernetesConfigs
+          value: app/config
+        - name: imageUrl
+          value: gcr.io/cicd-310509/gke-deploy-tekton-demo
+        - name: clusterName
+          value: cluster-1
+        - name: clusterLocation
+          value: asia-northeast1-b
+        - name: clusterProject
+          value: cicd-310509
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: cicd-pipelinebinding
+  namespace: default
+spec:
+  params:
+    - name: gitrevision
+      value: $(body.head_commit.id)
+    - name: namespace
+      value: default
+    - name: gitrepositoryurl
+      value: "https://github.com/akiyajma/tekton-app.git"
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: cicd-listene
+spec:
+  serviceAccountName: tekton-triggers-admin
+  resources:
+    KubernetesResource:
+      serviceType: NodePort
+  triggers:
+    - bindings:
+      - ref: cicd-pipelinebinding
+      template:
+        ref: cicd-triggertemplate
