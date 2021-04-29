@@ -14,7 +14,7 @@ spec:
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
-      metadata:kube
+      metadata:
         name: build-push-gke-deploy-run-$(uid)
       spec:
         pipelineRef:
