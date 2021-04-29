@@ -14,7 +14,7 @@ spec:
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
-      metadata:
+      metadata:kube
         name: build-push-gke-deploy-run-$(uid)
       spec:
         pipelineRef:
@@ -64,7 +64,7 @@ spec:
   serviceAccountName: tekton-triggers-admin
   resources:
     KubernetesResource:
-      serviceType: NodePort
+      serviceType: LoadBalancer
   triggers:
     - bindings:
       - ref: cicd-pipelinebinding
