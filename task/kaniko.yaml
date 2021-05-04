@@ -17,6 +17,8 @@ spec:
   - name: BUILDER_IMAGE
     description: The image on which builds will run
     default: gcr.io/kaniko-project/executor:latest
+  - name: IMAGETAG
+    description: create imagetag.
   workspaces:
   - name: source
   results:
@@ -37,23 +39,10 @@ spec:
     - $(params.EXTRA_ARGS)
     - --dockerfile=$(params.DOCKERFILE)
     - --context=$(workspaces.source.path)/$(params.CONTEXT)  # The user does not need to care the workspace and the source.
-    - --destination=$(params.IMAGE)
+    - --destination=$(params.IMAGE):$(params.IMAGETAG)
     - --oci-layout-path=$(workspaces.source.path)/$(params.CONTEXT)/image-digest
     # kaniko assumes it is running as root, which means this example fails on platforms
     # that default to run containers as random uid (like OpenShift). Adding this securityContext
     # makes it explicit that it needs to run as root.
     securityContext:
       runAsUser: 0
-  - name: write-digest
-    workingDir: $(workspaces.source.path)
-    image: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/imagedigestexporter:v0.11.1
-    # output of imagedigestexport [{"key":"digest","value":"sha256:eed29..660","resourceRef":{"name":"myrepo/myimage"}}]
-    command: ["/ko-app/imagedigestexporter"]
-    args:
-    - -images=[{"name":"$(params.IMAGE)","type":"image","url":"$(params.IMAGE)","digest":"","OutputImageDir":"$(workspaces.source.path)/$(params.CONTEXT)/image-digest"}]
-    - -terminationMessagePath=$(params.CONTEXT)/image-digested
-  - name: digest-to-results
-    workingDir: $(workspaces.source.path)
-    image: stedolan/jq
-    script: |
-      cat $(params.CONTEXT)/image-digested | jq '.[0].value' -rj | tee /tekton/results/IMAGE-DIGEST

@@ -35,10 +35,6 @@ spec:
     - name: imageUrl
       type: string
       description: URL of image repository.
-    - name: imageTag
-      type: string
-      description: Tag to apply to the built image.
-      default: latest
     - name: clusterName
       type: string
       description: Name of target GKE cluster to deploy to.
@@ -65,16 +61,65 @@ spec:
           value: "."
         - name: deleteExisting
           value: "true"
+    - name: imagetag
+      taskRef:
+        name: imagetag
+      runAfter:
+        - clone-repo
+      workspaces:
+        - name: imagetag
+          workspace: git-source
     - name: kaniko
       taskRef:
         name: kaniko
       runAfter:
-        - clone-repo
+        - imagetag
       params:
         - name: CONTEXT
           value: '$(params.pathToContext)'
         - name: IMAGE
-          value: '$(params.imageUrl):$(params.imageTag)'
+          value: '$(params.imageUrl)'
+        - name: IMAGETAG
+          value: "$(tasks.imagetag.results.IMAGE-TAG)"
       workspaces:
         - name: source
           workspace: git-source
+  finally:
+    - name: slack-failed
+      taskRef: 
+        name: send-to-channel-slack
+      workspaces:
+        - name: source
+          workspace: git-source
+      when:
+        - input: "$(tasks.kaniko.status)"
+          operator: in
+          values: ["Failed"]
+      params:
+        - name: token-secret
+          value: token-secret
+        - name: channel
+          value: "C020AQPPYR3"
+        - name: message
+          value: "Build Fail"
+        - name: IMAGETAG
+          value: "$(tasks.imagetag.results.IMAGE-TAG)"
+    - name: slack-succeeded
+      taskRef: 
+        name: send-to-channel-slack
+      workspaces:
+        - name: source
+          workspace: git-source
+      when:
+        - input: "$(tasks.kaniko.status)"
+          operator: in
+          values: ["Succeeded"]
+      params:
+        - name: token-secret
+          value: token-secret
+        - name: channel
+          value: "C020AQPPYR3"
+        - name: message
+          value: "Build Success"
+        - name: IMAGETAG
+          value: "$(tasks.imagetag.results.IMAGE-TAG)" 

@@ -1,0 +1,17 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: imagetag
+spec:
+  workspaces:
+  - name: imagetag
+  results:
+  - name: IMAGE-TAG
+    description: create imgage tag.
+
+  steps:
+  - name: create-imgagetag
+    workingDir: $(workspaces.imagetag.path)
+    image: gcr.io/tekton-releases/github.com/tektoncd/pipeline/cmd/git-init:v0.12.1
+    script: |
+      echo -n $(git rev-parse HEAD) > $(results.IMAGE-TAG.path)

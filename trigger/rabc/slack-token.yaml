@@ -1,0 +1,6 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: token-secret
+stringData:
+  token: xoxb-1999141963447-1999164970887-wsD4s8Oxd0BclAdS1f8fUi9O
