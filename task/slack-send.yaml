@@ -33,7 +33,7 @@ spec:
     image: docker.io/curlimages/curl:7.68.0@sha256:99a8e9629b3ae26efb977e1a98f4786d6bd730c5ab4dea64632e297d7c3e7151 #tag: 7.68.0
     script: |
       #!/bin/sh
-      /usr/bin/curl -X POST -H 'Content-type: application/json' -H 'Authorization: Bearer 'xoxp-1999141963447-2010835945653-2026871980865-d858a98bb866d38319997a958ff8c020 --data '{"channel":"$(params.channel)", "text":"$(params.message):$(params.IMAGETAG)"}' https://slack.com/api/chat.postMessage
+      /usr/bin/curl -X POST -H 'Content-type: application/json' -H 'Authorization: Bearer 'xoxp-1999141963447-2010835945653-2033103764628-f6b2d16e34fd9491f46b55743abe4c4f --data '{"channel":"$(params.channel)", "text":"$(params.message):$(params.IMAGETAG)"}' https://slack.com/api/chat.postMessage
     env:
     - name: TOKEN
       valueFrom:
